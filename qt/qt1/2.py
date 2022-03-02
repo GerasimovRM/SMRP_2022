@@ -1,21 +1,17 @@
 import sys
 
 # Импортируем из PyQt5.QtWidgets классы для создания приложения и виджета
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+from PyQt5.QtWidgets import QApplication, QPushButton, QMainWindow
+from ui_calc_two_number import Ui_MainWindow
 
 
 # Унаследуем наш класс от простейшего графического примитива QWidget
-class Example(QWidget):
+class Example(QMainWindow, Ui_MainWindow):
     def __init__(self):
         # Надо не забыть вызвать инициализатор базового класса
         super().__init__()
         # Зададим размер и положение нашего виджета,
-        self.setGeometry(100, 100, 300, 300)
-        # А также его заголовок
-        self.setWindowTitle('Первая программа')
-        self.button = QPushButton("Кнопка", self)
-        self.button.resize(100, 100)
-        self.button.move(100, 100)
+        self.setupUi(self)
 
 
 if __name__ == '__main__':
