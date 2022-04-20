@@ -1,12 +1,13 @@
 from typing import List
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.base_meta import init_database, get_session
 from database import User, Item
-from models.user import UserOut, UserIn
-from services.user import get_all_users, create_user
+from models.user import UserOut, UserIn, UserPut
+from services.user import get_all_users, create_user, get_one_user_by_id, change_user_data, \
+    delete_user_by_id
 
 app = FastAPI()
 
@@ -22,12 +23,41 @@ async def get_users(session: AsyncSession = Depends(get_session)) -> List[UserOu
     return [UserOut(**user.__dict__) for user in users]
 
 
+@app.get("/user/{user_id}", response_model=UserOut)
+async def get_user_by_id(user_id: int,
+                         session: AsyncSession = Depends(get_session)):
+    user = await get_one_user_by_id(user_id, session)
+    if user:
+        return UserOut(**user.__dict__)
+    else:   # если user == None, т.е. нет такого пользователя, то вернем 404
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {user_id} not found!")
+
+
 @app.post("/user", response_model=UserOut)
 async def post_user(user: UserIn,
                     session: AsyncSession = Depends(get_session)):
     new_user = await create_user(user, session)
-    return UserOut(id=new_user.id,
-                   fio=new_user.fio,
-                   email=new_user.email)
+    return UserOut(**new_user.__dict__)
 
 
+@app.put("/user", response_model=UserOut)
+async def put_user(user: UserPut,
+                   session: AsyncSession = Depends(get_session)):
+    changed_user = await change_user_data(user, session)
+    if changed_user:
+        return UserOut(**changed_user.__dict__)
+    else:  # если change_user == None, т.е. нет такого пользователя, то вернем 404
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {user.id} not found!")
+
+
+@app.delete("/user/{user_id}")
+async def delete_user(user_id: int,
+                      session: AsyncSession = Depends(get_session)):
+    user_is_delete = await delete_user_by_id(user_id, session)
+    if user_is_delete:
+        return {"status": "ok"}
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with id {user_id} not found!")
