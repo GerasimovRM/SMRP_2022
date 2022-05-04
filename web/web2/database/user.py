@@ -10,5 +10,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     fio = Column(String)
     email = Column(String)
+    password = Column(String(1000), nullable=True)
 
     items = relationship("Item", back_populates="user")

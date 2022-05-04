@@ -13,7 +13,10 @@ async def get_all_users(session: AsyncSession) -> List[User]:
     return result.scalars().all()
 
 
-async def create_user(user: UserIn, session: AsyncSession) -> User:
+async def create_user(user: UserIn,
+                      session: AsyncSession,
+
+                      ) -> User:
     # new_user = User(fio=UserIn.fio, email=UserIn.email)
     new_user = User(**user.dict())
     session.add(new_user)
@@ -23,6 +26,12 @@ async def create_user(user: UserIn, session: AsyncSession) -> User:
 
 async def get_one_user_by_id(user_id: int, session: AsyncSession) -> Optional[User]:
     query = select(User).where(User.id == user_id)
+    result = await session.execute(query)
+    return result.scalars().first()
+
+
+async def get_one_user_by_email(user_email: str, session: AsyncSession) -> Optional[User]:
+    query = select(User).where(User.email == user_email)
     result = await session.execute(query)
     return result.scalars().first()
 
