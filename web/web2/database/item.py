@@ -11,6 +11,5 @@ class Item(Base):
     name = Column(String)
     description = Column(String, nullable=True)
 
-    user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", back_populates="items")
+    # users = relationship("UsersItems", back_populates="item")
 

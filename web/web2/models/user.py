@@ -6,11 +6,17 @@ from .item import ItemOut
 class UserIn(BaseModel):
     fio: str
     email: str
+    password: str
 
 
-class UserOut(UserIn):
+class UserOut(BaseModel):
     id: int
-    # items: List[ItemOut]
+    fio: str
+    email: str
+    items: Optional[List[ItemOut]]
+
+    class Config:
+        orm_mode = True
 
 
 class UserPut(BaseModel):

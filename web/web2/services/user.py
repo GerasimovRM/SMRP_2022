@@ -1,10 +1,18 @@
 from typing import List, Optional
 
+from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from database.user import User
 from models.user import UserIn, UserPut
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 
 async def get_all_users(session: AsyncSession) -> List[User]:
@@ -15,9 +23,9 @@ async def get_all_users(session: AsyncSession) -> List[User]:
 
 async def create_user(user: UserIn,
                       session: AsyncSession,
-
                       ) -> User:
     # new_user = User(fio=UserIn.fio, email=UserIn.email)
+    user.password = get_password_hash(user.password)
     new_user = User(**user.dict())
     session.add(new_user)
     await session.commit()
@@ -25,7 +33,9 @@ async def create_user(user: UserIn,
 
 
 async def get_one_user_by_id(user_id: int, session: AsyncSession) -> Optional[User]:
-    query = select(User).where(User.id == user_id)
+    query = select(User)\
+        .where(User.id == user_id)\
+        .options(joinedload(User.items))
     result = await session.execute(query)
     return result.scalars().first()
 
